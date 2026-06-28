@@ -1,0 +1,36 @@
+# © 2026 Tadi Srimannarayana Reddi. All Rights Reserved.
+spring:
+  application:
+    name: notification-service
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: notification-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.sriman.notificationservice.dto.OrderCreatedEvent
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.sriman.notificationservice: INFO
+    org.springframework.kafka: WARN
