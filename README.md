@@ -26,10 +26,7 @@ via SSE — enabling a live order tracking feed without polling.
 ![notification-consumer-log.png](images/notification-consumer-log.png)
 
 ## Project Structure
-
-```
-![tech-stack.png](images/tech-stack.png)
-```
+![project-structure.png](images/project-structure.png)
 
 ## How to Run
 
@@ -169,13 +166,14 @@ Connected dashboard clients receive real-time push
 
 **Kafka Event Schema (`OrderCreatedEvent`):**
 
-| Field         | Type           | Description |
-| `eventId`     | UUID           | Unique ID for this event (idempotency) |
-| `orderId`     | UUID           | The created order ID |
-| `customerId`  | String         | Customer who placed the order |
-| `status`      | String         | e.g., `CREATED` |
-| `eventType`   | String         | e.g., `ORDER_CREATED` |
-| `createdAt`   | LocalDateTime  | Event timestamp |
+| Field | Type | Description |
+|---|---|---|
+| `eventId` | UUID | Unique ID for this event (idempotency) |
+| `orderId` | UUID | The created order ID |
+| `customerId` | String | Customer who placed the order |
+| `status` | String | e.g., `CREATED` |
+| `eventType` | String | e.g., `ORDER_CREATED` |
+| `createdAt` | LocalDateTime | Event timestamp |
 
 ---
 
@@ -193,6 +191,7 @@ SSE is simpler than WebSocket for one-directional server-to-client push. No addi
 ### Scaling Strategy (5,000+ Orders/Minute)
 
 | Layer | Strategy |
+|---|---|
 | **order-service** | Horizontal scaling behind a load balancer (stateless) |
 | **Kafka** | Increase partitions on `order-events` to match consumer count |
 | **notification-service** | Multiple instances, each in the same consumer group, handle different partitions |
@@ -204,6 +203,7 @@ SSE is simpler than WebSocket for one-directional server-to-client push. No addi
 ## Failure Handling Plan
 
 | Failure Scenario | Approach |
+|---|---|
 | **Kafka unavailable** | Order Service: order is still saved to DB; Kafka publish fails silently with a logged error. *Conceptually*: use the Outbox Pattern — store events in a DB table and a separate process publishes them when Kafka is back. |
 | **Service crash / restart** | `restart: on-failure` in Docker Compose. Kafka consumer auto-resumes from last committed offset on restart — no messages lost. |
 | **Duplicate orders** | *Conceptually*: validate `eventId` in consumer before processing. Use a database unique constraint or idempotency key on the order. |
@@ -217,6 +217,7 @@ SSE is simpler than WebSocket for one-directional server-to-client push. No addi
 Both services include **Spring Boot Actuator**:
 
 | Endpoint | Description |
+|---|---|
 | `/actuator/health` | Service health (DB, Kafka) |
 | `/actuator/info` | Application info |
 | `/actuator/metrics` | JVM, HTTP, Kafka metrics |
@@ -226,6 +227,7 @@ Both services include **Spring Boot Actuator**:
 ---
 
 | Feature | Details |
+|---|---|
 | `POST /orders` | Validates input, persists to PostgreSQL, publishes Kafka event, returns 201 |
 | `GET /orders/{id}` | Fetches order from DB, returns 404 if not found |
 | Kafka Producer | Publishes `OrderCreatedEvent` (JSON) to `order-events` topic |
