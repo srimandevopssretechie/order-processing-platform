@@ -10,9 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.UUID;
 
+@Tag(name = "Orders", description = "Order Management APIs")
 @Slf4j
 @RestController
 @RequestMapping("/orders")
@@ -21,6 +24,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @Operation(summary = "Create a new order")
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
         log.info("POST /orders - customerId={} productId={}", request.getCustomerId(), request.getProductId());
@@ -28,6 +32,7 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(summary = "Get order by ID")
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable UUID id) {
         log.info("GET /orders/{}", id);

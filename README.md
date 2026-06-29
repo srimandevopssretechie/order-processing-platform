@@ -2,6 +2,8 @@
 
 A microservices-based order processing platform built with **Java 17**, **Spring Boot 3**, **Apache Kafka**, **PostgreSQL**, and **Server-Sent Events (SSE)**.
 
+![tech-stack.png](images/tech-stack.png)
+
 ---
 
 ## Business Scenario
@@ -17,41 +19,17 @@ via SSE — enabling a live order tracking feed without polling.
 
 ![order_service_architecture.png](images/order_service_architecture.png)
 ![order_sequence_diagram.png](images/order_sequence_diagram.png)
+![dockerrunning.png](images/dockerrunning.png)
+![postman-create-order.png](images/postman-create-order.png)
+![postman-get-oraderbyid.png](images/postman-get-oraderbyid.png)
+![notification-consumer.png](images/notification-consumer.png)
+![notification-consumer-log.png](images/notification-consumer-log.png)
 
 ## Project Structure
 
 ```
-order-processing-platform/
-├── order-service/
-│   ├── src/main/java/com/sriman/orderservice/
-│   │   ├── controller/     OrderController.java
-│   │   ├── service/        OrderService.java
-│   │   ├── model/          Order.java, OrderStatus.java
-│   │   ├── repository/     OrderRepository.java
-│   │   ├── dto/            OrderRequest.java, OrderResponse.java
-│   │   ├── kafka/          OrderCreatedEvent.java, OrderEventProducer.java
-│   │   ├── exception/      GlobalExceptionHandler.java
-│   │   └── OrderServiceApplication.java
-│   ├── src/main/resources/ application.yml
-│   ├── Dockerfile
-│   └── pom.xml
-│
-├── notification-service/
-│   ├── src/main/java/com/sriman/notificationservice/
-│   │   ├── controller/     NotificationController.java
-│   │   ├── service/        SseEmitterService.java
-│   │   ├── kafka/          OrderEventConsumer.java
-│   │   ├── dto/            OrderCreatedEvent.java
-│   │   └── NotificationServiceApplication.java
-│   ├── src/main/resources/ application.yml
-│   ├── Dockerfile
-│   └── pom.xml
-│
-├── docker-compose.yml
-└── README.md
+![tech-stack.png](images/tech-stack.png)
 ```
-
----
 
 ## How to Run
 
@@ -94,9 +72,6 @@ curl http://localhost:8081/actuator/health
 
 docker-compose down -v
 ```
-
----
-
 ## API Examples
 
 ### Create an Order
@@ -163,8 +138,6 @@ curl -X POST http://localhost:8080/orders \
 }
 ```
 
----
-
 ## Kafka Event Flow
 
 ```
@@ -196,14 +169,13 @@ Connected dashboard clients receive real-time push
 
 **Kafka Event Schema (`OrderCreatedEvent`):**
 
-| Field | Type | Description |
-|---|---|---|
-| `eventId` | UUID | Unique ID for this event (idempotency) |
-| `orderId` | UUID | The created order ID |
-| `customerId` | String | Customer who placed the order |
-| `status` | String | e.g., `CREATED` |
-| `eventType` | String | e.g., `ORDER_CREATED` |
-| `createdAt` | LocalDateTime | Event timestamp |
+| Field         | Type           | Description |
+| `eventId`     | UUID           | Unique ID for this event (idempotency) |
+| `orderId`     | UUID           | The created order ID |
+| `customerId`  | String         | Customer who placed the order |
+| `status`      | String         | e.g., `CREATED` |
+| `eventType`   | String         | e.g., `ORDER_CREATED` |
+| `createdAt`   | LocalDateTime  | Event timestamp |
 
 ---
 
@@ -221,7 +193,6 @@ SSE is simpler than WebSocket for one-directional server-to-client push. No addi
 ### Scaling Strategy (5,000+ Orders/Minute)
 
 | Layer | Strategy |
-|---|---|
 | **order-service** | Horizontal scaling behind a load balancer (stateless) |
 | **Kafka** | Increase partitions on `order-events` to match consumer count |
 | **notification-service** | Multiple instances, each in the same consumer group, handle different partitions |
@@ -233,7 +204,6 @@ SSE is simpler than WebSocket for one-directional server-to-client push. No addi
 ## Failure Handling Plan
 
 | Failure Scenario | Approach |
-|---|---|
 | **Kafka unavailable** | Order Service: order is still saved to DB; Kafka publish fails silently with a logged error. *Conceptually*: use the Outbox Pattern — store events in a DB table and a separate process publishes them when Kafka is back. |
 | **Service crash / restart** | `restart: on-failure` in Docker Compose. Kafka consumer auto-resumes from last committed offset on restart — no messages lost. |
 | **Duplicate orders** | *Conceptually*: validate `eventId` in consumer before processing. Use a database unique constraint or idempotency key on the order. |
@@ -247,7 +217,6 @@ SSE is simpler than WebSocket for one-directional server-to-client push. No addi
 Both services include **Spring Boot Actuator**:
 
 | Endpoint | Description |
-|---|---|
 | `/actuator/health` | Service health (DB, Kafka) |
 | `/actuator/info` | Application info |
 | `/actuator/metrics` | JVM, HTTP, Kafka metrics |
@@ -257,7 +226,6 @@ Both services include **Spring Boot Actuator**:
 ---
 
 | Feature | Details |
-|---|---|
 | `POST /orders` | Validates input, persists to PostgreSQL, publishes Kafka event, returns 201 |
 | `GET /orders/{id}` | Fetches order from DB, returns 404 if not found |
 | Kafka Producer | Publishes `OrderCreatedEvent` (JSON) to `order-events` topic |
