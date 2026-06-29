@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -60,5 +61,13 @@ public class OrderService {
                             "Order not found with id: " + id);
                 });
         return OrderResponse.fromEntity(order);
+    }
+
+    public List<OrderResponse> getAllOrders() {
+        log.info("Fetching all orders");
+        return orderRepository.findAll()
+                .stream()
+                .map(OrderResponse::fromEntity)
+                .toList();
     }
 }

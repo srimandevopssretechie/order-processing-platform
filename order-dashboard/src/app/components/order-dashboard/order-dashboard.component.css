@@ -1,0 +1,134 @@
+/* © 2026 Tadi Srimannarayana Reddi. All Rights Reserved. */
+.dashboard {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+  font-size: 1.8rem;
+  margin: 0 0 4px;
+  color: #1a202c;
+}
+
+.subtitle {
+  color: #718096;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.actions {
+  margin-bottom: 16px;
+}
+
+.btn-create {
+  background: #3182ce;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-create:hover:not(:disabled) {
+  background: #2b6cb0;
+}
+
+.btn-create:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.message {
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+}
+
+.message.success {
+  background: #c6f6d5;
+  color: #276749;
+  border: 1px solid #9ae6b4;
+}
+
+.message.error {
+  background: #fed7d7;
+  color: #9b2c2c;
+  border: 1px solid #fc8181;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+thead tr {
+  background: #edf2f7;
+}
+
+th, td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  font-weight: 600;
+  color: #4a5568;
+  white-space: nowrap;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: #f7fafc;
+}
+
+.id-cell {
+  font-family: monospace;
+  color: #2d3748;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-created    { background: #bee3f8; color: #2a69ac; }
+.badge-processing { background: #fefcbf; color: #7b6016; }
+.badge-completed  { background: #c6f6d5; color: #276749; }
+.badge-cancelled  { background: #fed7d7; color: #9b2c2c; }
+
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #a0aec0;
+}
+
+.dashboard-footer {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: #718096;
+}

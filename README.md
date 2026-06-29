@@ -238,6 +238,82 @@ Both services include **Spring Boot Actuator**:
 | Structured Logging | `orderId`, `eventId`, Kafka metadata logged at each step |
 | Docker Compose | Zookeeper, Kafka, PostgreSQL, both services with health checks |
 
+---
+
+## Angular Order Dashboard
+
+A minimal Angular 17 standalone-component dashboard that creates orders, displays them in a live-refreshing table, and auto-updates every **3 seconds** using RxJS `interval` + `switchMap`.
+
+### Prerequisites
+
+| Tool | Minimum Version |
+|---|---|
+| Node.js | 18+ |
+| npm | 9+ |
+| Angular CLI | 17+ (`npm install -g @angular/cli@17`) |
+| Spring Boot order-service | running on port 8080 |
+
+### Run the Angular Dashboard
+
+```bash
+# 1. Start the Spring Boot backend first (Docker or local)
+docker-compose up --build          # from Task/ root
+
+# 2. Open a new terminal, navigate to the Angular project
+cd order-dashboard
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the development server
+ng serve
+```
+
+Open **http://localhost:4200** in your browser.
+
+> ⚠️ The Spring Boot service **must be running on `http://localhost:8080`** before opening the dashboard. CORS is already configured for `http://localhost:4200`.
+
+### Dashboard Features
+
+| Feature | Details |
+|---|---|
+| **Create Sample Order** | Generates a random `customerId`, `productId`, and `quantity` then POSTs to `/orders` |
+| **Order Table** | Shows `id`, `customerId`, `productId`, `quantity`, `status`, `createdAt` |
+| **Auto-refresh** | Polls `GET /orders` every 3 seconds via `interval(3000).pipe(switchMap(...))` |
+| **Status badges** | Color-coded: `CREATED` (blue) · `PROCESSING` (yellow) · `COMPLETED` (green) · `CANCELLED` (red) |
+| **Feedback messages** | Success/error banners auto-dismiss after 4 seconds |
+
+### Angular Project Structure
+
+```
+order-dashboard/
+└── src/
+    └── app/
+        ├── models/
+        │   └── order.model.ts           # Order & OrderRequest interfaces
+        ├── services/
+        │   └── order.service.ts         # HttpClient wrapper (GET/POST /orders)
+        ├── components/
+        │   └── order-dashboard/
+        │       ├── order-dashboard.component.ts   # Logic + auto-refresh
+        │       ├── order-dashboard.component.html # Table + create button
+        │       └── order-dashboard.component.css  # Scoped styles
+        ├── app.component.ts             # Root standalone component
+        └── app.config.ts                # provideHttpClient() registered here
+```
+
+### New Backend Endpoint Added
+
+`GET /orders` was added to the Spring Boot `order-service` to support the dashboard:
+
+```
+GET  http://localhost:8080/orders        → returns List<OrderResponse>
+POST http://localhost:8080/orders        → creates a new order
+GET  http://localhost:8080/orders/{id}   → gets order by UUID
+```
+
+---
+
 ## Author
 
 **Tadi Srimannarayana Reddi**

@@ -1,0 +1,10 @@
+/* © 2026 Tadi Srimannarayana Reddi. All Rights Reserved. */
+/* Global styles */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #f0f4f8;
+  color: #2d3748;
+  min-height: 100vh;
+}
+
