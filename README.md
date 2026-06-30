@@ -314,6 +314,87 @@ GET  http://localhost:8080/orders/{id}   → gets order by UUID
 
 ---
 
+## Resilience Patterns
+
+The below basic resilience patterns have been implemented in `order-service` to make it more robust at an interview-demonstrable level.
+
+---
+
+### 1. Basic Resilience4j Circuit Breaker
+
+**Why?** If Kafka becomes slow or unavailable, every publish attempt blocks for the full timeout. The circuit breaker detects repeated failures and "opens" — fail-fast for a cooldown period, then retries automatically.
+
+**Where applied:** `OrderEventProducer.sendOrderEvent()` — the single Kafka publish call.
+
+**Behaviour:**
+
+| State | Condition |
+|---|---|
+| **CLOSED** (normal) | Calls pass through; failures counted |
+| **OPEN** (tripped) | 50%+ of last 5 calls failed → fast-fail for 10 s |
+| **HALF-OPEN** | After 10 s, 2 test calls allowed; if they pass → CLOSED |
+
+**Fallback:** logs a warning and re-throws so `OutboxEventPublisher` catches it and marks the event `FAILED` for retry.
+
+**Config (application.yml):**
+```yaml
+resilience4j:
+  circuitbreaker:
+    instances:
+      kafka-producer:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 2
+```
+
+**Maven dependencies added (`pom.xml`):**
+```xml
+<dependency>
+    <groupId>io.github.resilience4j</groupId>
+    <artifactId>resilience4j-spring-boot3</artifactId>
+    <version>2.2.0</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
+
+---
+
+### 2. Basic Idempotency
+
+**Why?** On network retries or client double-clicks, the same order could be inserted twice. The idempotency key prevents this — the second request with the same key returns the already-created order.
+
+**How to use:**
+
+Include an optional `idempotencyKey` in the `POST /orders` body:
+
+```json
+{
+  "customerId": "CUST-001",
+  "productId": "PROD-XYZ",
+  "quantity": 2,
+  "idempotencyKey": "my-unique-request-id-abc123"
+}
+```
+
+- **First request** → order is created normally; `idempotencyKey` stored in the `orders` table.
+- **Duplicate request** (same key) → existing order returned immediately, nothing inserted.
+- **No key provided** → behaves exactly as before (no change to existing callers).
+
+**Files changed:**
+
+| File | Change |
+|---|---|
+| `dto/OrderRequest.java` | Added optional `idempotencyKey` field |
+| `model/Order.java` | Added `idempotencyKey` column (`UNIQUE`, nullable) |
+| `repository/OrderRepository.java` | Added `findByIdempotencyKey(String)` |
+| `service/OrderService.java` | Check key before insert; return existing order if found |
+
+---
+
 ## Author
 
 **Tadi Srimannarayana Reddi**

@@ -13,32 +13,32 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "outbox_events")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order {
+public class DomainEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
-    private String customerId;
+    private UUID aggregateId;
 
     @Column(nullable = false)
-    private String productId;
+    private String aggregateType;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private String eventType;
 
-    @Column(unique = true, nullable = true)
-    private String idempotencyKey;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String payload;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status;
+    private OutboxEventStatus status;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
