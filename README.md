@@ -56,6 +56,7 @@ This starts:
 | Zookeeper | 2181 |
 | Kafka | 9092 |
 | PostgreSQL | 5432 |
+| Redis | 6379 |
 | order-service | 8080 |
 | notification-service | 8081 |
 
@@ -392,6 +393,21 @@ Include an optional `idempotencyKey` in the `POST /orders` body:
 | `model/Order.java` | Added `idempotencyKey` column (`UNIQUE`, nullable) |
 | `repository/OrderRepository.java` | Added `findByIdempotencyKey(String)` |
 | `service/OrderService.java` | Check key before insert; return existing order if found |
+
+---
+
+## Redis Caching
+
+Basic read-through caching is applied to the `order-service` using **Spring Cache backed by Redis**.
+
+| Endpoint | Cache Name | Eviction |
+|---|---|---|
+| `GET /orders/{id}` | `orders` (key = order UUID) | — |
+| `GET /orders` | `all-orders` | Evicted on `POST /orders` |
+
+- `GET /orders/{id}` results are cached in Redis — repeated lookups skip the database entirely.
+- `GET /orders` (full list) is cached and automatically invalidated whenever a new order is created via `POST /orders`.
+- Redis runs as a separate container in Docker Compose and is auto-configured by Spring Boot via `spring.data.redis.*`.
 
 ---
 

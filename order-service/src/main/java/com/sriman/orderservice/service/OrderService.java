@@ -14,6 +14,9 @@ import com.sriman.orderservice.repository.OrderRepository;
 import com.sriman.orderservice.repository.DomainEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +37,10 @@ public class OrderService {
 
     /**
      * Creates an order and stores an outbox event in one transaction.
+     * Evicts the all-orders cache
      */
     @Transactional
+    @CacheEvict(value = "all-orders", allEntries = true)
     public OrderResponse createOrder(OrderRequest request) {
 
         if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
@@ -93,6 +98,8 @@ public class OrderService {
         return OrderResponse.fromEntity(saved);
     }
 
+    // Cache individual order lookups
+    @Cacheable(value = "orders", key = "#id")
     public OrderResponse getOrder(UUID id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> {
@@ -103,6 +110,8 @@ public class OrderService {
         return OrderResponse.fromEntity(order);
     }
 
+    // Cache full order list
+    @Cacheable("all-orders")
     public List<OrderResponse> getAllOrders() {
         log.info("Fetching all orders");
         return orderRepository.findAll()
