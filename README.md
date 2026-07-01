@@ -25,6 +25,8 @@ via SSE — enabling a live order tracking feed without polling.
 ![notification-consumer.png](images/notification-consumer.png)
 ![notification-consumer-log.png](images/notification-consumer-log.png)
 ![OrderDeashboard.png](images/OrderDeashboard.png)
+![Postgresstables.png](images/Postgresstables.png)
+![Postgressorders.png](images/Postgressorders.png)
 ## Project Structure
 ![project-structure.png](images/project-structure.png)
 
@@ -287,20 +289,8 @@ Open **http://localhost:4200** in your browser.
 ### Angular Project Structure
 
 ```
-order-dashboard/
-└── src/
-    └── app/
-        ├── models/
-        │   └── order.model.ts           # Order & OrderRequest interfaces
-        ├── services/
-        │   └── order.service.ts         # HttpClient wrapper (GET/POST /orders)
-        ├── components/
-        │   └── order-dashboard/
-        │       ├── order-dashboard.component.ts   # Logic + auto-refresh
-        │       ├── order-dashboard.component.html # Table + create button
-        │       └── order-dashboard.component.css  # Scoped styles
-        ├── app.component.ts             # Root standalone component
-        └── app.config.ts                # provideHttpClient() registered here
+![OrdersDashboard.png](images/OrdersDashboard.png)
+
 ```
 
 ### New Backend Endpoint Added
@@ -335,7 +325,7 @@ The below basic resilience patterns have been implemented in `order-service` to 
 | **OPEN** (tripped) | 50%+ of last 5 calls failed → fast-fail for 10 s |
 | **HALF-OPEN** | After 10 s, 2 test calls allowed; if they pass → CLOSED |
 
-**Fallback:** logs a warning and re-throws so `OutboxEventPublisher` catches it and marks the event `FAILED` for retry.
+**Fallback:** logs a warning and re-throws so `DomainEventPublisher` catches it and marks the event `FAILED` for retry.
 
 **Config (application.yml):**
 ```yaml
