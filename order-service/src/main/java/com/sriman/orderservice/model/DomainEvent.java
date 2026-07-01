@@ -38,7 +38,7 @@ public class DomainEvent {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OutboxEventStatus status;
+    private DomainEventStatus status;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
